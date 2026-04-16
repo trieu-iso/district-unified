@@ -146,9 +146,49 @@ pnpm format                    # Oxfmt
 ### CI/CD
 GitHub Actions. Render for API deployments. GraphQL Hive for schema management. PR titles must follow Conventional Commits.
 
+## Claude Code Tooling
+
+This repo has a `.claude/` setup for cross-submodule workflows. Use these tools instead of doing things manually.
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `/build-ios` | Build iOS app via XcodeBuildMCP (`district-staging` scheme) |
+| `/test-ios` | Run iOS unit tests via XcodeBuildMCP (`district-unit-tests` scheme) |
+| `/check-district` | `moon run :check` in district/ (typecheck + lint + test) |
+| `/check-graph` | `pnpm check:no-e2e` in graph/ (typecheck + lint + unit tests) |
+| `/check-all` | Run checks across all three submodules sequentially |
+| `/lint-all` | Run the right linter per submodule (swiftlint, oxlint) |
+| `/submodule-status` | Show branch, dirty state, ahead/behind for all submodules |
+| `/submodule-update` | `git submodule update --remote --merge` with status report |
+| `/sync-graphql` | Guided workflow: regenerate iOS types after graph schema changes |
+
+### Skills
+
+| Skill | When to use |
+| --- | --- |
+| `/research-project` | Broad codebase research ("how does X work?") with parallel agents |
+| `/cross-platform-trace` | Trace a feature's linear path through DB -> GraphQL -> iOS/Web |
+| `/schema-sync` | After modifying GraphQL or DB schema — guides sync across submodules |
+| `/submodule-health` | Check for drift: stale types, schema divergence, outdated pointers |
+
+### Hooks (automatic)
+
+- **Session start**: Prints submodule status table (branch, dirty/clean, ahead/behind, last commit)
+- **Submodule safety**: Blocks `git commit`/`git push` that targets a submodule via `cd <submodule> && git commit` — prevents detached HEAD footgun
+
+### Research Output
+
+Research and trace documents save to `output/<platform>/` with sequential numbering (`##-YYYY-MM-DD-<slug>.md`):
+- `output/ios/` — iOS-focused research
+- `output/web/` — Web/Android-focused research
+- `output/backend/` — Backend-focused research
+- `output/cross-platform/` — Cross-submodule research, traces, and health reports
+
 ## Cross-Cutting Conventions
 
 - **PR titles**: All three repos enforce Conventional Commits (feat, fix, docs, style, refactor, perf, test, build, ci, revert)
 - **PR bodies**: Must include a Test Plan section with checkbox format
-- **GraphQL**: iOS consumes the graph server's schema. After schema changes in `graph/`, regenerate in `ios/` with `mise run graphql:schema && mise run graphql:generate`
-- **Shared DB**: `district/packages/db` and `graph/packages/db` both define Drizzle schemas for the same PostgreSQL database
+- **GraphQL**: iOS consumes the graph server's schema. After schema changes in `graph/`, use `/sync-graphql` or manually run `cd ios && mise run graphql:schema && mise run graphql:generate`
+- **Shared DB**: `district/packages/db` and `graph/packages/db` both define Drizzle schemas for the same PostgreSQL database. Use `/submodule-health` to check for schema drift
