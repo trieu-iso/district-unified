@@ -1,0 +1,9 @@
+[submodule "ios"]
+	path = ios
+	url = git@github-iso:isoapp/ios.git
+[submodule "district"]
+	path = district
+	url = git@github-iso:isoapp/district.git
+[submodule "graph"]
+	path = graph
+	url = git@github-iso:isoapp/graph.git
